@@ -53,9 +53,6 @@ class base_piece(pygame.sprite.Sprite):
             original_pos = pygame.math.Vector2(chess_squares[self.square_id][0].left, chess_squares[self.square_id][0].top)
             original_distance = pygame.math.Vector2.distance_to(original_pos, target_pos) 
             distance = pygame.math.Vector2.distance_to(current_pos, target_pos) 
-            print(distance)
-            new_pos = pygame.math.Vector2.move_towards(current_pos, target_pos, original_distance * 0.1)
-            self.rect.topleft = (new_pos.x, new_pos.y)
             if abs(distance) < 10:
                 self.rect.topleft = (target_pos.x, target_pos.y)
                 for sprite in piece_group:
@@ -63,6 +60,10 @@ class base_piece(pygame.sprite.Sprite):
                         sprite.kill()
                 self.square_id = self.target_id
                 animating = False
+            else:
+                new_pos = pygame.math.Vector2.move_towards(current_pos, target_pos, (original_distance / distance) * 5)
+                self.rect.topleft = (new_pos.x, new_pos.y)
+            print(distance)
 
 class rook(base_piece):
     def __init__(self, black, square_id) -> None:
@@ -119,9 +120,7 @@ engine = chess.engine.SimpleEngine.popen_uci(r"stockfish_15.1_linux_x64_avx2/sto
 engine.configure({"Skill Level": 10})
 board = chess.Board()
 chess_squares = generate_chess_squares()
-
 piece_group = pygame.sprite.Group()
-
 for square_index in board.piece_map():
 
         piece = board.piece_map()[square_index]
@@ -216,6 +215,6 @@ while not board.is_game_over() and not quit:
     pygame.display.update()
     if board.is_game_over():
         time.sleep(10)
-    fps.tick(60)
+    fps.tick(144)
 
 engine.quit()
